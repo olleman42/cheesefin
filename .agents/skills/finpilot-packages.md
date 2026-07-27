@@ -203,6 +203,6 @@ Changes that DO trigger CI workflows:
 - [ ] For build-time: does it use `dnf5 install -y`?
 - [ ] For COPR: is `copr_install_isolated` used?
 - [ ] For third-party repo: is the repo file removed at end of script?
-- [ ] For BrewFraction: is the app ID verified on Flathub?
+- [ ] For Flatpak: is the app ID verified on Flathub?
 - [ ] For Brewfile: does `brew bundle check --file` pass locally?
 - [ ] Does the PR include the corresponding `validate-*.yml` trigger if applicable?
