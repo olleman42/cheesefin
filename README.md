@@ -17,6 +17,15 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 ### Added Packages (Build-time)
 
 - **System packages**: tmux, micro, mosh - [brief explanation of why]
+- **Xbox controller drivers (`xone` + `xpadneo`)**: prebuilt kernel modules from
+  [ublue-os/akmods](https://github.com/ublue-os/akmods), so Xbox controllers work
+  without installing anything after boot. `xone` covers wired controllers, the
+  Xbox Wireless Dongle (firmware included), headsets and the Chatpad; `xpadneo`
+  covers Bluetooth pairing with force feedback and correct axis mapping. Between
+  them every common connection method is handled.
+  **On Secure Boot systems, run `ujust enroll-akmods-key` once and reboot**,
+  otherwise the modules are refused at load time. Check status any time with
+  `ujust check-xbox-controllers`.
 
 ### Added Applications (Runtime)
 
@@ -31,9 +40,12 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 
 - Any systemd services enabled/disabled
 - Desktop environment changes
-- Other notable modifications
+- **`mt76x2u` kernel module blacklisted** (via `xone-kmod-common`) - it shares a
+  chipset with the Xbox Wireless Dongle and competes with xone for the device.
+- **udev rules and HID quirks for Bluetooth controllers** (via `xpadneo-kmod-common`).
+- **New `ujust` commands**: `enroll-akmods-key`, `check-xbox-controllers`.
 
-_Last updated: [date]_
+_Last updated: 2026-07-27_
 
 > Replace the placeholders above with your actual customizations whenever you add or remove packages, apps, or configuration. This section is what tells users how your image differs from the base.
 
