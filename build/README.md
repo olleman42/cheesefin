@@ -9,6 +9,7 @@ Scripts are named with a number prefix (e.g., `10-build.sh`, `20-onepassword.sh`
 ## Included Scripts
 
 - **`10-build.sh`** - Main build script for base system modifications, package installation, and service configuration
+- **`41-xbox-controllers.sh`** - Xbox controller kernel modules `xone` and `xpadneo` (prebuilt akmods from [ublue-os/akmods](https://github.com/ublue-os/akmods)). Consumes `/ctx/oci/akmods`, staged by the `akmods` stage in `Containerfile`. Asserts that each akmod matches the base image kernel and fails the build if the pins have drifted. Disables the akmods COPR that `ublue-os-akmods-addons` leaves enabled.
 
 ## Example Scripts
 

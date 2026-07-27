@@ -38,6 +38,10 @@
 # The base image is pinned in the FROM line below and updated by Renovate.
 FROM ghcr.io/projectbluefin/common:latest@sha256:633ae6efa2f28f451812586cfeb5162d7b70054dda3e25510abdb3c6afa13be8 AS common
 FROM ghcr.io/ublue-os/brew:latest@sha256:07799dfe9ed44812a63d1b23c74e3e30b758a976f647032d916c34daf30f60a4 AS brew
+# Prebuilt akmod RPMs (xone + xpadneo Xbox controller drivers). Must stay
+# kernel-aligned with the base image below - build/41-xbox-controllers.sh
+# asserts this at build time.
+FROM ghcr.io/ublue-os/akmods:main-44@sha256:ad27f27794d2173582bd72df96976bd48474419ec8557e148270e7645634cc30 AS akmods
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
@@ -48,6 +52,9 @@ COPY custom /custom
 # Copy from OCI containers to distinct subdirectories to avoid conflicts
 COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
+# Only /rpms (~2 MB). Deliberately excludes /kernel-rpms (~310 MB) - the base
+# image already ships the matching kernel.
+COPY --from=akmods /rpms /oci/akmods
 
 # Base Image - GNOME included (Fedora official OSTree desktop)
 # Renovate will keep the digest pin up to date.
@@ -69,6 +76,7 @@ ARG VERSION=""
 ##   - Local custom files from /custom
 ##   - Files from @projectbluefin/common at /oci/common (includes branding/artwork content)
 ##   - Files from @ublue-os/brew at /oci/brew
+##   - Prebuilt akmod RPMs from @ublue-os/akmods at /oci/akmods
 ## Scripts are run in numerical order (10-build.sh, 20-example.sh, etc.)
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
@@ -86,6 +94,14 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build/10-build.sh
+
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=secret,id=GITHUB_TOKEN \
+    --mount=type=tmpfs,dst=/boot \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/build/41-xbox-controllers.sh
 
 ### CLEANUP
 ## Use Bluefin's clean-stage.sh to remove build artifacts before linting.
