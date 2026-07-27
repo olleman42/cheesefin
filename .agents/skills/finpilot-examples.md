@@ -44,26 +44,40 @@ The template does not automatically discover numbered scripts. See `build/README
 
 ## Existing Example Scripts
 
-### `build/40-nvidia.sh.example`
+### `build/40-nvidia.sh` — ACTIVATED in this fork
+
+This started as `40-nvidia.sh.example` and is now an active script. The example
+file no longer exists; edit `build/40-nvidia.sh` directly.
 
 **What it does:**
 
-- Pulls pre-built NVIDIA akmods from `ghcr.io/ublue-os/akmods-nvidia-open`
 - Installs NVIDIA driver (open kernel modules, CUDA, libnvidia-container)
 - Configures CDI (Container Device Interface) GPU passthrough for Podman
 - Writes bootc kernel args: nouveau blacklist + `nvidia-drm.modeset=1`
 - Enables Mutter `kms-modifiers` for Wayland support on NVIDIA
 
-**How to activate:**
+**How it gets its RPMs — note the divergence from the original example:**
 
-```bash
-mv build/40-nvidia.sh.example build/40-nvidia.sh
-# Add the standard RUN block for /ctx/build/40-nvidia.sh after 10-build.sh.
-# See build/README.md.
-just build
+The original example pulled the akmods artifact at build time with `skopeo` and
+untarred the manifest layers, which required installing `skopeo` and `jq` into
+the image and used an unpinned tag. This fork instead stages the artifact as an
+OCI context image, matching how `common` and `brew` are consumed:
+
+```dockerfile
+FROM ghcr.io/ublue-os/akmods-nvidia-open:main-44@sha256:... AS akmods-nvidia
+COPY --from=akmods-nvidia /rpms /oci/akmods-nvidia
 ```
 
-All NVIDIA logic is self-contained in the script. It provisions NVIDIA support directly into the base image when both the script is renamed to `.sh` and its Containerfile `RUN` block is added. Deactivate by removing that `RUN` block and renaming the file back to `.example`.
+The script then reads `/ctx/oci/akmods-nvidia`. This keeps the digest pinned and
+Renovate-trackable, and keeps `skopeo`/`jq` out of the shipped image. Apply the
+same pattern to any future akmods consumer.
+
+**Hardware constraint:** only `akmods-nvidia-open` publishes `main-*` tags, so
+the open kernel modules are the only option on a stock Fedora base. They require
+Turing (GTX 16xx / RTX 20xx) or newer.
+
+**Deactivate by** removing the `RUN` block, the `FROM`/`COPY` lines, and the
+script.
 
 **Expected validation:**
 

@@ -71,18 +71,22 @@ release, update both the `FEDORA_MAJOR_VERSION` ARG and the base image tag.
 
 ### NVIDIA GPU support
 
-NVIDIA support is a build-time option activated by renaming the example script and adding its explicit Containerfile `RUN` block:
+NVIDIA support is **active** in this fork: `build/40-nvidia.sh` plus its explicit Containerfile `RUN` block. It provisions the NVIDIA driver, CDI container toolkit, Mutter kms-modifiers, and bootc kernel args directly into the base image — no separate image variant, no `IMAGE_NAME` gating.
 
-```bash
-mv build/40-nvidia.sh.example build/40-nvidia.sh
-# Add the standard RUN block for /ctx/build/40-nvidia.sh after 10-build.sh.
-# See build/README.md.
-just build
+The driver RPMs come from an OCI context image staged into the ctx stage, not from a build-time `skopeo` pull:
+
+```dockerfile
+FROM ghcr.io/ublue-os/akmods-nvidia-open:main-44@sha256:... AS akmods-nvidia
+COPY --from=akmods-nvidia /rpms /oci/akmods-nvidia
 ```
 
-All NVIDIA logic is self-contained in `40-nvidia.sh`. When both the script and its explicit Containerfile `RUN` block are activated, it provisions the NVIDIA driver, CDI container toolkit, Mutter kms-modifiers, and bootc kernel args directly into the base image — no separate image variant, no `IMAGE_NAME` gating.
+Only `akmods-nvidia-open` publishes `main-*` tags, so the open kernel modules are the only option on a stock Fedora base — they require Turing (GTX 16xx / RTX 20xx) or newer.
 
-Deactivate by removing its Containerfile `RUN` block and renaming the script back to `.example`. See `build/40-nvidia.sh.example` for the full implementation.
+### akmods are kernel-coupled
+
+Any prebuilt akmod (`40-nvidia.sh`, `41-xbox-controllers.sh`) is compiled against **one exact kernel**. The akmods images and the base image are pinned independently, so Renovate can move them apart. Both scripts assert the match and fail the build rather than shipping a module that will not load. If the base image and akmods pins are bumped separately, expect `main` to go red until the second bump lands — grouping the digests in `renovate.json` avoids this.
+
+Deactivate NVIDIA by removing its `RUN` block, the `FROM`/`COPY` lines, and `build/40-nvidia.sh`.
 
 ### 00-image-info.sh branding
 

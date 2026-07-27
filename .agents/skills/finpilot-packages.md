@@ -45,7 +45,8 @@ metadata:
 | Replace desktop environment    | Remove old → install new → set default        | `build/30-*.sh` (see examples)       |
 | Switch base image              | Update `FROM` line                            | `Containerfile`                      |
 | Add OCI containers             | Uncomment/add `COPY --from=`                  | `Containerfile` ctx stage            |
-| Add NVIDIA GPU support         | Rename `40-nvidia.sh.example`, then add its RUN block after `10-build.sh` | `build/40-nvidia.sh` |
+| Add NVIDIA GPU support         | Already active — edit the script directly     | `build/40-nvidia.sh`                 |
+| Add another prebuilt kernel module | Add it to `MODULES=()`; it must exist in the akmods image | `build/41-xbox-controllers.sh`   |
 
 ## Build-Time: `build/10-build.sh`
 

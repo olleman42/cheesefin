@@ -42,6 +42,10 @@ FROM ghcr.io/ublue-os/brew:latest@sha256:07799dfe9ed44812a63d1b23c74e3e30b758a97
 # kernel-aligned with the base image below - build/41-xbox-controllers.sh
 # asserts this at build time.
 FROM ghcr.io/ublue-os/akmods:main-44@sha256:ad27f27794d2173582bd72df96976bd48474419ec8557e148270e7645634cc30 AS akmods
+# NVIDIA open kernel modules + driver. Only the *-open variant publishes main-*
+# tags, so this requires Turing (GTX 16xx / RTX 20xx) or newer hardware.
+# Also kernel-coupled to the base image; build/40-nvidia.sh asserts this.
+FROM ghcr.io/ublue-os/akmods-nvidia-open:main-44@sha256:78da7d4e19c7d7eba861636e88a44bfff3c09af1bb1999d18c6981e862aa263b AS akmods-nvidia
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
@@ -55,6 +59,7 @@ COPY --from=brew /system_files /oci/brew
 # Only /rpms (~2 MB). Deliberately excludes /kernel-rpms (~310 MB) - the base
 # image already ships the matching kernel.
 COPY --from=akmods /rpms /oci/akmods
+COPY --from=akmods-nvidia /rpms /oci/akmods-nvidia
 
 # Base Image - GNOME included (Fedora official OSTree desktop)
 # Renovate will keep the digest pin up to date.
@@ -77,6 +82,7 @@ ARG VERSION=""
 ##   - Files from @projectbluefin/common at /oci/common (includes branding/artwork content)
 ##   - Files from @ublue-os/brew at /oci/brew
 ##   - Prebuilt akmod RPMs from @ublue-os/akmods at /oci/akmods
+##   - NVIDIA driver + akmod RPMs from @ublue-os/akmods-nvidia-open at /oci/akmods-nvidia
 ## Scripts are run in numerical order (10-build.sh, 20-example.sh, etc.)
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
@@ -94,6 +100,14 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build/10-build.sh
+
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=secret,id=GITHUB_TOKEN \
+    --mount=type=tmpfs,dst=/boot \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/build/40-nvidia.sh
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache/libdnf5 \
