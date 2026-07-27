@@ -50,7 +50,8 @@ metadata:
 
 | Symptom                                    | Cause                                              | Solution                                                                                               |
 | ------------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `nvidia-smi` not found after boot          | NVIDIA driver was not installed during build       | Rename `40-nvidia.sh.example` to `.sh`, add its RUN block after `10-build.sh`, and rebuild |
+| `nvidia-smi` not found after boot          | NVIDIA driver was not installed during build, or the module is blocked by Secure Boot | Run `ujust check-nvidia`. If the module is present but not loaded, run `ujust enroll-akmods-key` and reboot. Verify `build/40-nvidia.sh` and its Containerfile `RUN` block are both present |
+| Build fails: "akmods and base image pins have drifted apart" | The akmods image is built for a different kernel than the base image | Expected and deliberate. Wait for the matching akmods rebuild (daily, 00:01 UTC) and let Renovate bump both digests, ideally grouped in one PR |
 | NVIDIA build fails: "Signing key not found" | ublue-os/staging COPR GPG key not imported         | Add `rpm --import https://download.copr.fedorainfracloud.org/results/ublue-os/staging/pubkey.gpg` before `nvidia-install.sh` |
 | NVIDIA build fails: akmods pull fails      | Wrong `AKMODS_FLAVOR` or kernel version mismatch   | Verify `AKMODS_FLAVOR` matches your base image (`main` for stock Fedora, `coreos-stable` for bluefin kernel); check kernel version with `rpm -q kernel-core` |
 | Wayland broken on NVIDIA                   | Missing `nvidia-drm.modeset=1` or `kms-modifiers`  | Confirm `/usr/lib/bootc/kargs.d/00-nvidia.toml` exists with modeset karg; verify `kms-modifiers` was added to Mutter gschema override |

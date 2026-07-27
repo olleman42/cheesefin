@@ -17,6 +17,14 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 ### Added Packages (Build-time)
 
 - **System packages**: tmux, micro, mosh - [brief explanation of why]
+- **NVIDIA driver (open kernel modules, `610.43.03`)**: prebuilt driver and
+  kernel module from [ublue-os/akmods](https://github.com/ublue-os/akmods),
+  including container GPU passthrough via CDI so Podman containers can use the
+  GPU. **Requires a Turing or newer GPU (GTX 16xx / RTX 20xx and up)** - the open
+  kernel modules do not support older cards.
+  **On Secure Boot systems, run `ujust enroll-akmods-key` once and reboot.**
+  Check status with `ujust check-nvidia`, and container access with
+  `ujust test-nvidia-container`.
 - **Xbox controller drivers (`xone` + `xpadneo`)**: prebuilt kernel modules from
   [ublue-os/akmods](https://github.com/ublue-os/akmods), so Xbox controllers work
   without installing anything after boot. `xone` covers wired controllers, the
@@ -43,7 +51,12 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 - **`mt76x2u` kernel module blacklisted** (via `xone-kmod-common`) - it shares a
   chipset with the Xbox Wireless Dongle and competes with xone for the device.
 - **udev rules and HID quirks for Bluetooth controllers** (via `xpadneo-kmod-common`).
-- **New `ujust` commands**: `enroll-akmods-key`, `check-xbox-controllers`.
+- **NVIDIA kernel args** (`/usr/lib/bootc/kargs.d/00-nvidia.toml`): nouveau
+  blacklisted, `nvidia-drm.modeset=1` for Wayland, simpledrm disabled.
+- **`ublue-nvctk-cdi.service` enabled** - generates the CDI spec for container
+  GPU access on boot.
+- **New `ujust` commands**: `enroll-akmods-key`, `check-xbox-controllers`,
+  `check-nvidia`, `test-nvidia-container`.
 
 _Last updated: 2026-07-27_
 

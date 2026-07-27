@@ -9,13 +9,13 @@ Scripts are named with a number prefix (e.g., `10-build.sh`, `20-onepassword.sh`
 ## Included Scripts
 
 - **`10-build.sh`** - Main build script for base system modifications, package installation, and service configuration
+- **`40-nvidia.sh`** - NVIDIA open kernel modules, driver and CDI container GPU passthrough (prebuilt from [ublue-os/akmods-nvidia-open](https://github.com/ublue-os/akmods)). Consumes `/ctx/oci/akmods-nvidia`, staged by the `akmods-nvidia` stage in `Containerfile`. **Requires Turing (GTX 16xx / RTX 20xx) or newer** - the open modules do not support older cards, and the proprietary variant publishes no `main-*` tags. Delegates the bulk of the work to the vendored `nvidia-install.sh`.
 - **`41-xbox-controllers.sh`** - Xbox controller kernel modules `xone` and `xpadneo` (prebuilt akmods from [ublue-os/akmods](https://github.com/ublue-os/akmods)). Consumes `/ctx/oci/akmods`, staged by the `akmods` stage in `Containerfile`. Asserts that each akmod matches the base image kernel and fails the build if the pins have drifted. Disables the akmods COPR that `ublue-os-akmods-addons` leaves enabled.
 
 ## Example Scripts
 
 - **`20-onepassword.sh.example`** - Example showing how to install software from third-party RPM repositories (Google Chrome, 1Password)
 - **`30-cosmic-desktop.sh.example`** - Example showing how to replace the GNOME desktop with COSMIC desktop
-- **`40-nvidia.sh.example`** - Example showing how to add NVIDIA drivers and CDI container support
 
 To use an example script:
 1. Rename it to remove the `.example` extension (for example, `mv build/20-onepassword.sh.example build/20-onepassword.sh`).
