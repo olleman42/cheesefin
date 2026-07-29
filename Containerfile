@@ -41,7 +41,7 @@ FROM ghcr.io/ublue-os/brew:latest@sha256:07799dfe9ed44812a63d1b23c74e3e30b758a97
 # Prebuilt akmod RPMs (xone + xpadneo Xbox controller drivers). Must stay
 # kernel-aligned with the base image below - build/41-xbox-controllers.sh
 # asserts this at build time.
-FROM ghcr.io/ublue-os/akmods:main-44@sha256:5d0f83e4a494404ce7128808863006923b218ff61258fd2d329f54d1ce9c0dfc AS akmods
+FROM ghcr.io/ublue-os/akmods:main-44@sha256:1909bd18ce866b724cb1d66a6f85232142e7d42513c4659dd4e04f8a52148781 AS akmods
 # NVIDIA open kernel modules + driver. Only the *-open variant publishes main-*
 # tags, so this requires Turing (GTX 16xx / RTX 20xx) or newer hardware.
 # Also kernel-coupled to the base image; build/40-nvidia.sh asserts this.
