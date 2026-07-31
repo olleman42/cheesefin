@@ -45,7 +45,7 @@ FROM ghcr.io/ublue-os/akmods:main-44@sha256:1909bd18ce866b724cb1d66a6f85232142e7
 # NVIDIA open kernel modules + driver. Only the *-open variant publishes main-*
 # tags, so this requires Turing (GTX 16xx / RTX 20xx) or newer hardware.
 # Also kernel-coupled to the base image; build/40-nvidia.sh asserts this.
-FROM ghcr.io/ublue-os/akmods-nvidia-open:main-44@sha256:e567f1722b02ba0c656b7a0436d67bf610ebcc767d2e67735bf622bdfa30bee4 AS akmods-nvidia
+FROM ghcr.io/ublue-os/akmods-nvidia-open:main-44@sha256:f26155e9f160184f41c76352ee25a5fc5a233cf376c93306907921e7f5eb1412 AS akmods-nvidia
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
